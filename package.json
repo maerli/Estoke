@@ -1,0 +1,24 @@
+{
+  "name": "estoke",
+  "version": "1.0.0",
+  "description": "estoke server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "marcos maerli",
+  "license": "MIT",
+  "dependencies": {
+    "bootstrap": "^4.3.1",
+    "chokidar": "^3.0.1",
+    "express": "^4.17.1",
+    "ip": "^1.1.5",
+    "jquery": "^3.4.1",
+    "node-datetime": "^2.1.2",
+    "node-fetch": "^2.6.0",
+    "nodemon": "^1.19.1",
+    "sqlite3": "^4.0.9",
+    "super-ssdp": "0.0.3",
+    "xmlhttprequest": "^1.8.0"
+  }
+}

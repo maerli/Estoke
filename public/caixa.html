@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Caixa</title>
+
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <style media="screen">
+      [name=texto]{
+        border:1px solid black;
+        margin: 3px 0 0 0;
+        color:red !important;
+      }
+      [name=texto]:focus{
+        outline:none !inportant;
+      }
+      #result span{
+        width: :100% !important;
+        display:block !important;
+        cursor:pointer;
+        font-size:12px;
+      }
+      #result span:hover{
+        background-color: rgba(0,0,255,0.5);
+        padding:1px;
+        color:white;
+      }
+      #result{
+        border:1px solid gray;
+        -webkit-border-radius:6px;
+        position:absolute;
+        background-color: white;
+        z-index:11;
+      }
+      table{
+        font-size:11px;
+        margin-top:90px;
+      }
+      td{
+        padding:5px !important;
+      }
+      tr td input{
+        width:100px;
+        background-color:gray;
+        -webkit-border-radius:10px;
+        color:white;
+      }
+      input{
+        outline:none !important;
+      }
+      .body{
+        margin:auto;
+        width:60%;
+      }
+      .content{
+        height:400px;
+        width:60%;
+        overflow-y:auto;
+      }
+    </style>
+    <link rel="stylesheet" href="bootstrap.css">
+    <script src="jquery.min.js"></script>
+    <script src="util.js"></script>
+    <script src="modal.js"></script>
+
+    <script type="text/javascript">
+      function abrirCaixa(){
+        var valor = prompt("Valor de entrada")
+      }
+      function gen(first,last){
+      	return {
+			"up":true,
+      		"atual":first,
+			"last":last,
+      		"next":function(){
+				this.last = this.atual
+      			if(this.atual == last){
+      				this.atual = first
+      			}else{
+      				this.atual += (!this.up)?2:1
+					this,up = true
+      			}
+      			return this.atual
+      		},
+      		"previous":function(){
+				this.last = this.atual
+      			if(this.atual == first){
+      				this.atual = last
+      			}else{
+      				this.atual -= 1
+					this.up = false
+      			}
+      			return this.atual
+      		}
+      	}
+      }
+      var sindex = 0
+      var plenty = null
+      function search(event){
+        if(event.keyCode == 27){
+          document.querySelector('#result').innerHTML = ''
+          return false
+        }
+        if(event.keyCode == 40 || event.keyCode == 38){
+          var res = document.querySelector('#result').children[0].children
+          if(event.keyCode == 40){
+            res[plenty.atual].style['background-color'] = 'red'
+			res[plenty.last].style['background-color'] = 'white'
+            plenty.next()
+          }else{
+			plenty.previous()
+            res[plenty.atual].style['background-color'] = 'red'
+			res[plenty.last].style['backgroun-color'] = 'white'
+			console.dir(plenty)
+          }
+          return false
+        }
+          var value = event.target.value
+          if(value !== ''){
+            fetch('/search/'+value).then(function(data){
+              data.json().then(function(json){
+                if(json.length != 0){
+                  var div = document.createElement('div')
+                  div.setAttribute('class','col-lg-12 p-0')
+                  plenty = gen(0,json.length-1)
+                  for(let n = 0 ; n<json.length;n++){
+                      var link = document.createElement('span')
+                      link.innerText = json[n].nome
+                      json[n]['quantidade'] = 1
+                      link.onclick = (event)=>{
+                        venda(json[n])
+                      }
+                      div.append(link)
+                  }
+                  document.querySelector('#result').innerHTML = ''
+                  document.querySelector('#result').append(div) 
+                }
+              })
+            })
+          }else{
+            document.querySelector('#result').innerHTML = ''
+          }
+      }
+      function c(name,opt={},text){
+        var elm = document.createElement(name)
+        for(op in opt){
+          elm.setAttribute(op,opt[op])
+        }
+        if(text){
+          elm.innerText = text
+        }
+        return elm
+      }
+      var produtos = []
+
+      function mostrarTotal(){
+        total = 0
+        for(produto of produtos){
+          total += parseInt(produto.quantidade,10) * parseFloat(produto.valor)
+        }
+        document.querySelector('#foot').innerHTML = '<th> Valor total </th><th></th><th></th><th> R$ '+total.toFixed(2) +'</th>'
+      }
+
+      function venda(produto){
+        for(p in produtos){
+          if(produtos[p].id == produto.id){
+            var e = document.querySelector('#id'+produto.id)
+            e.value = parseInt(e.value,10)+1
+            e.click()
+            mostrarTotal()
+            return
+          }
+        }
+
+        var elmproduto = document.querySelector('#produtos')
+        var prod = c('tr')
+        var tdnome = c('td',{},produto.nome)
+        var tdquant = c('td')
+        var quant = c('input',{'id':'id'+produto.id,'value':'1','type':'number'})
+        var tdvalor = c('td',{},'R$ '+produto.valor.toFixed(2))
+        var tdtotal = c('td',{},'R$ '+produto.valor.toFixed(2))
+
+        produto.total = produto.valor
+
+        function change(event){
+          var quantidade = parseInt(event.target.value,10)
+          var total =  parseFloat(produto.valor) * quantidade
+          for(x in produtos){
+            if(produtos[x].id == produto.id){
+              produtos[x].quantidade = quantidade
+              produtos[x].total = quantidade * produtos[x].valor
+            }
+          }
+          tdtotal.innerText = 'R$ '+total.toFixed(2)
+          mostrarTotal()
+        }
+
+        quant.addEventListener('change',change)
+        quant.addEventListener('click',change)
+        tdquant.append(quant)
+        prod.append(tdnome,tdquant,tdvalor,tdtotal)
+        elmproduto.insertBefore(prod,elmproduto.firstChild)
+        produtos.push(produto)
+       mostrarTotal()
+      }
+      function cancelarVenda(){
+        var is = prompt('Sua senha para cancelar venda.')
+        if(is == 'expires5'){
+          produtos = []
+          document.querySelector('#produtos').innerHTML = ''
+          document.querySelector('#foot').innerHTML = ''
+        }else{
+          alert('senha incorreta')
+        }
+      }
+
+      function confirmarVenda(){
+        var total = 0
+        var tot = document.querySelector('#total-show')
+        for(produto of produtos){
+          total += parseInt(produto.quantidade,10) * parseFloat(produto.valor)
+        }
+        tot.value = total
+        $('#ExemploModalCentralizado').on('shown.bs.modal',function(){
+          $('#nome')[0].focus()
+        })
+      }
+      function mostrarTroco(event){
+        var tot = document.querySelector('#total-show')
+        var total = parseFloat(tot.value)
+        var vrc = event.target.value
+        var recebido = parseFloat(isNaN(vrc)?0:vrc)
+        var t = (recebido - total).toFixed(2)
+        document.querySelector('#troco').value = t
+
+      }
+      function sendForm(event){
+        event.preventDefault()
+        fetch('/caixa',{
+          'method':'POST',
+          'headers':{'Content-Type':'application/json'},
+          'body':JSON.stringify({'head':{
+            'valor':document.querySelector('#total-show').value,
+            'user':'maerli',
+            'recebido':document.querySelector('#nome').value,
+            'troco':document.querySelector('#troco').value
+          },'data':produtos})
+        }).then(function(data){
+          data.json().then(function(json){
+            $('#ExemploModalCentralizado').modal('hide')
+            console.log('algo')
+            cancelarVenda()
+          })
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <div class="body">
+    <a href="vendas.html" class="btn btn-primary">Vendas</a>
+    <input type="button" class="btn btn-success" name="" value="Abrir caixa" onclick="abrirCaixa();">
+    <input type="text"  class="col-lg-10 form-control" onkeyup="search(event)" name="texto" autofocus placeholder="Produto">
+    <div class="col-lg-6" id="result">
+
+    </div>
+
+  <div style="margin-left:52%;margin-top:10%;position:absolute">
+    <button type="button" class="btn btn-danger" onclick="cancelarVenda();" name="button">Cancelar venda</button>
+    <button type="button" class="btn btn-success"  onclick="confirmarVenda();" name="button" data-toggle="modal" data-target="#ExemploModalCentralizado" >Confirmar </button>
+  </div>
+    <div class="content col-10">
+
+    <table class="table col-12">
+      <thead>
+      <tr>
+        <th> Produto </th>
+        <th> Quantidade </th>
+        <th> Valor </th>
+        <th> Total </th>
+      </tr>
+      <tr id="foot">
+
+      </tr>
+    </thead>
+    <tbody id="produtos">
+    </tbody>
+    </table>
+  </div>
+</div>
+       <!-- Modal -->
+       <div class="modal fade" id="ExemploModalCentralizado" tabindex="-1" role="dialog" aria-labelledby="TituloModalCentralizado" aria-hidden="true">
+         <div class="modal-dialog modal-dialog-centered" role="document">
+           <div class="modal-content">
+             <div class="modal-header">
+               <h5 class="modal-title" id="TituloModalCentralizado"> Confirmar venda</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                 <span aria-hidden="true">&times;</span>
+               </button>
+             </div>
+             <div class="modal-body">
+              <form class="form" onsubmit="sendForm(event);">
+                <div class="form-row">
+                  <label for="total-show"> Valor total</label>
+                  <div class="input-group">
+                    <div class="input-group-pretend">
+                       <div class="input-group-text">R$</div>
+                    </div>
+                    <input type="text" class="form-control" name="" value="" id="total-show">
+                </div>
+                </div>
+                <div class="form-row">
+                  <label for="nome"> Valor recebido</label>
+                  <div class="input-group">
+                    <div class="input-group-pretend">
+                       <div class="input-group-text">R$</div>
+                    </div>
+                  <input type="text" autofocus="autofocus" onkeyup="mostrarTroco(event)" class="form-control" placeholder="nome" name="nome" id="nome" value="">
+                </div>
+              </div>
+               <div class="form-row">
+                  <label for="valor"> Troco </label>
+                  <div class="input-group">
+                    <div class="input-group-pretend">
+                       <div class="input-group-text">R$</div>
+                    </div>
+                  <input type="text" class="form-control" placeholder="troco" id="troco" name="troco" value="">
+                </div>
+                  <input type="submit" hidden>
+                </div>
+              </form>
+             </div>
+             <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+               <button type="button" class="btn btn-primary">Salvar mudanças</button>
+             </div>
+           </div>
+         </div>
+       </div>
+
+
+  </body>
+</html>

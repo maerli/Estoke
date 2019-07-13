@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <title> Estoke </title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+	<style>
+		[type=submit]{
+			margin:auto;
+			display:inline;
+		}
+		form{
+			text-align:center;
+		}
+		h1{
+			text-align:center;
+		}
+	</style>
+ </head>
+ <body>
+   <script>
+   function sendForm(event){
+    event.preventDefault()
+    var nome = document.querySelector('[name=nome]').value
+    var senha = document.querySelector('[name=senha]').value
+    if(nome == 'maerli'){
+      sessionStorage.setItem('id',10)
+      location.reload()
+    }
+   }
+    var id = sessionStorage.getItem('id')
+    if(location.search == '?sair') id = null
+    if(id != null){
+      document.write(`
+		<div class="p-5">
+        <button class="btn btn-outline-success"> <a href="caixa.html">Caixa</a> </button>
+        <button class="btn btn-outline-secondary"><a href="fornecedores.html">Fornecedores</a> </button>
+        <button class="btn btn-outline-success"> <a href="produtos.html"> Produtos </a> </button>
+        <button class="btn btn-outline-success"> Usuários </button>
+        </div>
+      `)
+    }else{
+      document.write(`
+      <div class="p-5" style="margin:auto;width:50%">
+      <img src="estoke.png" style="margin:auto" class="col-12">
+      <form class="form col-lg-12" onsubmit="sendForm(event);">
+        <div class="form-group">
+          <input type="text" placeholder="nome" class="m-2 form-control" name="nome" value="">
+          <input type="password" placeholder="senha" class="m-2 form-control" name="senha" value="">
+          <input type="submit" class="btn btn-primary" value="entrar">
+        </div>
+      </form>
+      </div>
+      `)
+    }
+    </script>
+ </body>
+</html>

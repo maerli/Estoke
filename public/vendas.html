@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title>Vendas</title>
+    <style media="screen">
+      table{
+        font-size:13px !important;
+        cursor:pointer;
+        margin:auto;
+      }
+      span{
+        color:green;
+        font-weight: bold;
+        margin:5px;
+      }
+      td{
+        font-size: 13px;
+        padding:1px !important;
+      }
+      tr:hover{
+        color:white;
+        background-color:black;
+      }
+
+    </style>
+    <link rel="stylesheet" href="bootstrap.css">
+    <script src="jquery.min.js"></script>
+    <script src="util.js"></script>
+    <script src="modal.js"></script>
+  </head>
+  <body>
+    <table class="table col-lg-8">
+      <tr>
+        <th> id </th>
+        <th> valor </th>
+        <th> valor de recibo</th>
+        <th> troco </th>
+        <th> data </th>
+      </tr>
+      <tbody id="content">
+
+      </tbody>
+    </table>
+    <script>
+
+    function c(name,opt={},text){
+      var elm = document.createElement(name)
+      for(op in opt){
+        elm.setAttribute(op,opt[op])
+      }
+      if(text){
+        elm.innerText = text
+      }
+      return elm
+    }
+    function getVenda(id){
+      fetch('/lotes/'+id).then(function(data){
+        data.json().then(function(json){
+          var table = []
+          for(var venda of json.rows){
+            venda.valor = 'R$ '+venda.valor
+            venda.total = 'R$ '+venda.total
+            delete venda.lote
+            table.push(Object.values(venda).map(v=>'<td>'+v+'</td>').join('\n'))
+          }
+          document.querySelector('#body').innerHTML = table.map(v=>'<tr>'+v+'</tr>').join('\n')
+          document.querySelector('#head').innerHTML = Object.keys(venda).map(v=>'<th>'+v+'</th>').join('\n')
+          document.querySelector('#total').innerText = json.valor
+          $('#ExemploModalCentralizado').modal('show')
+        })
+      })
+    }
+      fetch('/vendas/maerli').then(function(data){
+        data.json().then(function(json){
+          console.log(json)
+          for(let lote of json){
+            var tr = c('tr')
+            tr.dataset.id = lote.id
+            tr.addEventListener('click',function(event){
+              var id = this.dataset.id
+              console.log(lote.id)
+              getVenda(id)
+            })
+            var id = c('td',{},lote.id)
+            var valor = c('td',{},'R$ ' + lote.valor)
+            var data = c('td',{},lote.data)
+            var recebido = c('td',{},'R$ '+lote.recebido)
+            var troco = c('td',{},'R$ '+lote.troco)
+            tr.append(id,valor,recebido,troco,data)
+            document.querySelector('#content').append(tr)
+          }
+        })
+      })
+    </script>
+    <!-- Modal -->
+    <div class="modal fade" id="ExemploModalCentralizado" tabindex="-1" role="dialog" aria-labelledby="TituloModalCentralizado" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="TituloModalCentralizado"> Detalhes venda</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+           <table class="col-12">
+             <thead>
+               <tr id="head"></tr>
+             </thead>
+             <tbody id="body">
+
+             </tbody>
+           </table>
+           Valor total da venda R$ <span id="total"></span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            <button type="button" class="btn btn-primary">Salvar mudanças</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

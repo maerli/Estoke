@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>User</title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <script type="text/javascript">
+      function send(event){
+        event.preventDefault()
+        var nome = document.querySelector('[name=nome]').value
+        var senha = document.querySelector('[name=senha]').value
+        fetch('/user',{method:'POST',
+           headers:{
+             'Content-Type':'application/json'
+           },
+          body:JSON.stringify({nome,senha})
+        })
+          .then(function(data){
+            data.json().then(function(json){
+              console.log(json)
+          })
+        })
+      }
+    </script>
+  </head>
+  <body>
+    <h1> User </h1>
+    <form class="form" onsubmit="send(event);">
+      <div class="form-control">
+      <input type="text" class="form-control" name="nome" placeholder="nome" value="">
+      <input type="password" class="form-control" name="senha" placeholder="senha" value="">
+      <input type="submit" class="btn btn-success" value="Candastrar">
+    </div>
+    </form>
+  </body>
+</html>

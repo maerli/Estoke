@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Forncedores</title>
+    <link rel="stylesheet" href="bootstrap.css">
+    <style media="screen">
+      body{
+        font-size:12px;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="jquery.min.js"></script>
+    <script src="util.js"></script>
+    <script src="modal.js"></script>
+
+    <!-- Botão para acionar modal -->
+   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#ExemploModalCentralizado">
+     Abrir modal de demonstração
+   </button>
+
+   <!-- Modal -->
+   <div class="modal fade" id="ExemploModalCentralizado" tabindex="-1" role="dialog" aria-labelledby="TituloModalCentralizado" aria-hidden="true">
+     <div class="modal-dialog modal-dialog-centered" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h5 class="modal-title" id="TituloModalCentralizado"> Novo Fornecedor</h5>
+           <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+             <span aria-hidden="true">&times;</span>
+           </button>
+         </div>
+         <div class="modal-body">
+          <form class="form" onsubmit="sendForm(event);">
+            <div class="form-group">
+              <label for="nome">Nome</label>
+              <input type="text" class="form-control" placeholder="nome" name="nome" id="nome" value="">
+              <label for="endereco"> Endereço </label>
+              <input type="text" class="form-control" placeholder="endereco" id="endereco" name="endereco" value="">
+              <input type="submit" value="">
+            </div>
+          </form>
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+           <button type="button" class="btn btn-primary">Salvar mudanças</button>
+         </div>
+       </div>
+     </div>
+   </div>
+
+   <div id="table-content">
+
+   </div>
+
+     <script type="text/javascript">
+       function c(name,opt,text){
+         var elm = document.createElement(name)
+         for(op in opt){
+           elm.setAttribute(op,opt[op])
+         }
+         if(text){
+           elm.innerText = text
+         }
+         return elm
+       }
+
+       function load(){
+       var table = c('table',{
+         'border':'1',
+         'class':'table col-lg-6'
+       })
+
+       fetch('/fornecedores',{mode:'no-cors'}).then(function(data){
+         data.json().then(function(json){
+           var trr = c('tr')
+           var tdd1 = c('th',{},'id')
+           var tdd2 = c('th',{},'nome')
+           var tdd3 = c('th',{},'endereço')
+           trr.append(tdd1,tdd2,tdd3)
+           table.append(trr)
+           for(row in json){
+              var tr = c('tr',{})
+              var td1 = c('td',{},json[row]['id'])
+              var td2 = c('td',{},json[row]['nome'])
+              var td3 = c('td',{},json[row]['endereco'])
+              tr.append(td1,td2,td3)
+              table.append(tr)
+            }
+            f = table
+           document.querySelector('#table-content').innerHTML = (table.outerHTML)
+         })
+       })
+       }
+       load()
+
+       function sendForm(event){
+         event.preventDefault()
+         var nome = document.querySelector('#nome').value
+         var endereco = document.querySelector('#endereco').value
+         fetch('/fornecedores',{
+           'method':'POST',
+           'headers':{'Content-Type':'application/json'},
+           'body':JSON.stringify({nome,endereco})
+         }).then(function(data){
+           data.json().then(function(json){
+             console.log(json)
+             $('#ExemploModalCentralizado').modal('hide')
+             load()
+           })
+         })
+       }
+
+     </script>
+
+  </body>
+</html>
