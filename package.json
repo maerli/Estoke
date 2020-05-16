@@ -13,7 +13,7 @@
     "chokidar": "^3.0.1",
     "express": "^4.17.1",
     "ip": "^1.1.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "node-datetime": "^2.1.2",
     "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1",
